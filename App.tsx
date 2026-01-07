@@ -82,7 +82,7 @@ const App: React.FC = () => {
       </div>
 
       {/* Small Screen Overlay Warning */}
-      <div className="md:hidden fixed inset-0 bg-[#0f1115] z-50 flex items-center justify-center p-8 text-center text-white">
+      <div className="md:hidden fixed inset-0 bg-[#0f1115] z-50 flex items-center justify-center p-8 text-center text-white no-print">
         <div>
           <div className="w-16 h-16 bg-blue-600/20 rounded-full flex items-center justify-center mx-auto mb-6">
              <PenTool className="w-8 h-8 text-blue-500" />
