@@ -20,15 +20,18 @@ export const AITextArea: React.FC<AITextAreaProps> = ({
   rows = 4 
 }) => {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string>('');
 
   const handleEnhance = async () => {
     if (!value.trim()) return;
     setLoading(true);
+    setError('');
     try {
       const improved = await improveText(value, type);
       onChange(improved);
     } catch (error) {
-      console.error(error);
+      const message = error instanceof Error ? error.message : String(error);
+      setError(message || 'Failed to generate content. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -57,6 +60,11 @@ export const AITextArea: React.FC<AITextAreaProps> = ({
           placeholder={placeholder}
         />
       </div>
+      {error && (
+        <div className="mt-2 text-xs text-red-400 ml-1">
+          {error}
+        </div>
+      )}
     </div>
   );
 };

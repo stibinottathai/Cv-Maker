@@ -1,18 +1,20 @@
 import { GoogleGenAI } from "@google/genai";
 
-const apiKey = process.env.API_KEY || '';
+// Note: In Vite, `process.env.*` is statically replaced via `vite.config.ts`.
+// Keep the fallback chain so local dev and builds behave consistently.
+const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
 
 // Safely initialize the client only if the key exists to prevent immediate crashes
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export const generateContent = async (prompt: string, context?: string): Promise<string> => {
   if (!ai) {
-    console.error("API Key not found");
-    return "Error: API Key is missing. Please check your configuration.";
+    throw new Error('Missing Gemini API key. Set GEMINI_API_KEY in .env.local and restart the dev server.');
   }
 
   try {
-    const model = 'gemini-3-flash-preview';
+    // Use a broadly available model name to avoid "model not found" errors.
+    const model = 'gemini-1.5-flash';
     const fullPrompt = `
       Context: ${context || 'Resume writing assistance'}.
       Task: ${prompt}
@@ -26,8 +28,9 @@ export const generateContent = async (prompt: string, context?: string): Promise
 
     return response.text || '';
   } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
     console.error("Gemini API Error:", error);
-    return "Failed to generate content. Please try again.";
+    throw new Error(message || 'Failed to generate content. Please try again.');
   }
 };
 

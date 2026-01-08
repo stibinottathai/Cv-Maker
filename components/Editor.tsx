@@ -1,6 +1,5 @@
 import React from 'react';
 import { ResumeData } from '../types';
-import { AITextArea } from './AITextArea';
 import { Plus, Trash2, ChevronDown, ChevronUp, User, Briefcase, GraduationCap, Wrench, FolderKanban } from 'lucide-react';
 
 interface EditorProps {
@@ -9,6 +8,73 @@ interface EditorProps {
   activeSection: string;
   setActiveSection: (section: string) => void;
 }
+
+type IconComponent = React.ComponentType<{ className?: string }>;
+
+const SectionHeader: React.FC<{
+  title: string;
+  id: string;
+  icon: IconComponent;
+  activeSection: string;
+  setActiveSection: (section: string) => void;
+}> = ({ title, id, icon: Icon, activeSection, setActiveSection }) => (
+  <button
+    type="button"
+    onClick={() => setActiveSection(activeSection === id ? '' : id)}
+    className={`w-full flex items-center justify-between p-5 transition-all border-b border-slate-800/50 ${activeSection === id ? 'bg-slate-800 text-white' : 'bg-transparent text-slate-400 hover:text-white hover:bg-slate-800/30'}`}
+  >
+    <div className="flex items-center gap-3">
+      <Icon className={`w-5 h-5 ${activeSection === id ? 'text-blue-400' : 'text-slate-500'}`} />
+      <span className="font-semibold text-sm tracking-wide">{title}</span>
+    </div>
+    {activeSection === id ? (
+      <ChevronUp className="w-4 h-4 text-slate-500" />
+    ) : (
+      <ChevronDown className="w-4 h-4 text-slate-500" />
+    )}
+  </button>
+);
+
+const InputField: React.FC<{
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+}> = ({ label, value, onChange, placeholder }) => (
+  <div className="group">
+    <label className="block text-xs font-medium text-slate-400 mb-1.5 ml-1 group-focus-within:text-blue-400 transition-colors">
+      {label}
+    </label>
+    <input
+      type="text"
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-600 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-slate-600"
+    />
+  </div>
+);
+
+const TextAreaField: React.FC<{
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  rows?: number;
+}> = ({ label, value, onChange, placeholder, rows = 4 }) => (
+  <div className="group">
+    <label className="block text-xs font-medium text-slate-400 mb-1.5 ml-1 group-focus-within:text-blue-400 transition-colors">
+      {label}
+    </label>
+    <textarea
+      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-600 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-slate-600"
+      rows={rows}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      placeholder={placeholder}
+    />
+  </div>
+);
 
 export const Editor: React.FC<EditorProps> = ({ data, onChange, activeSection, setActiveSection }) => {
   
@@ -50,32 +116,6 @@ export const Editor: React.FC<EditorProps> = ({ data, onChange, activeSection, s
     onChange({ ...data, [section]: items });
   };
 
-  const SectionHeader = ({ title, id, icon: Icon }: { title: string, id: string, icon: any }) => (
-    <button
-      onClick={() => setActiveSection(activeSection === id ? '' : id)}
-      className={`w-full flex items-center justify-between p-5 transition-all border-b border-slate-800/50 ${activeSection === id ? 'bg-slate-800 text-white' : 'bg-transparent text-slate-400 hover:text-white hover:bg-slate-800/30'}`}
-    >
-      <div className="flex items-center gap-3">
-          <Icon className={`w-5 h-5 ${activeSection === id ? 'text-blue-400' : 'text-slate-500'}`} />
-          <span className="font-semibold text-sm tracking-wide">{title}</span>
-      </div>
-      {activeSection === id ? <ChevronUp className="w-4 h-4 text-slate-500" /> : <ChevronDown className="w-4 h-4 text-slate-500" />}
-    </button>
-  );
-
-  const InputField = ({ label, value, onChange, placeholder }: any) => (
-      <div className="group">
-          <label className="block text-xs font-medium text-slate-400 mb-1.5 ml-1 group-focus-within:text-blue-400 transition-colors">{label}</label>
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            placeholder={placeholder}
-            className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-600 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all hover:border-slate-600"
-          />
-      </div>
-  );
-
   return (
     <div className="bg-[#1a1f2c] h-full flex flex-col text-slate-300">
       <div className="p-6 border-b border-slate-800">
@@ -85,7 +125,7 @@ export const Editor: React.FC<EditorProps> = ({ data, onChange, activeSection, s
 
       <div className="flex-1 overflow-y-auto custom-scrollbar">
         {/* Personal Details */}
-        <SectionHeader title="Personal Details" id="personal" icon={User} />
+        <SectionHeader title="Personal Details" id="personal" icon={User} activeSection={activeSection} setActiveSection={setActiveSection} />
         {activeSection === 'personal' && (
           <div className="p-6 space-y-5 animate-in slide-in-from-top-2 duration-200 bg-slate-800/20">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -100,18 +140,18 @@ export const Editor: React.FC<EditorProps> = ({ data, onChange, activeSection, s
                  <InputField label="Website / LinkedIn" value={data.personal.website} onChange={(v: string) => updatePersonal('website', v)} />
               </div>
             </div>
-            <AITextArea
+            <TextAreaField
               label="Professional Summary"
-              type="summary"
               value={data.personal.summary}
               onChange={(val) => updatePersonal('summary', val)}
               placeholder="E.g. Senior Product Manager with 5 years..."
+              rows={4}
             />
           </div>
         )}
 
         {/* Experience */}
-        <SectionHeader title="Experience" id="experience" icon={Briefcase} />
+        <SectionHeader title="Experience" id="experience" icon={Briefcase} activeSection={activeSection} setActiveSection={setActiveSection} />
         {activeSection === 'experience' && (
           <div className="p-6 space-y-6 animate-in slide-in-from-top-2 duration-200 bg-slate-800/20">
             {data.experience.map((exp, index) => (
@@ -129,9 +169,8 @@ export const Editor: React.FC<EditorProps> = ({ data, onChange, activeSection, s
                   <InputField label="Start Date" value={exp.startDate} onChange={(v: string) => updateArrayItem('experience', exp.id, 'startDate', v)} />
                   <InputField label="End Date" value={exp.endDate} onChange={(v: string) => updateArrayItem('experience', exp.id, 'endDate', v)} />
                 </div>
-                <AITextArea
+                <TextAreaField
                   label="Description"
-                  type="experience"
                   value={exp.description}
                   onChange={(val) => updateArrayItem('experience', exp.id, 'description', val)}
                   rows={3}
@@ -148,7 +187,7 @@ export const Editor: React.FC<EditorProps> = ({ data, onChange, activeSection, s
         )}
 
         {/* Education */}
-        <SectionHeader title="Education" id="education" icon={GraduationCap} />
+        <SectionHeader title="Education" id="education" icon={GraduationCap} activeSection={activeSection} setActiveSection={setActiveSection} />
         {activeSection === 'education' && (
           <div className="p-6 space-y-6 animate-in slide-in-from-top-2 duration-200 bg-slate-800/20">
             {data.education.map((edu) => (
@@ -177,7 +216,7 @@ export const Editor: React.FC<EditorProps> = ({ data, onChange, activeSection, s
         )}
 
          {/* Skills */}
-         <SectionHeader title="Skills" id="skills" icon={Wrench} />
+         <SectionHeader title="Skills" id="skills" icon={Wrench} activeSection={activeSection} setActiveSection={setActiveSection} />
         {activeSection === 'skills' && (
           <div className="p-6 bg-slate-800/20 animate-in slide-in-from-top-2 duration-200">
             <div className="grid grid-cols-1 gap-3">
@@ -219,7 +258,7 @@ export const Editor: React.FC<EditorProps> = ({ data, onChange, activeSection, s
         )}
 
         {/* Projects */}
-        <SectionHeader title="Projects" id="projects" icon={FolderKanban} />
+        <SectionHeader title="Projects" id="projects" icon={FolderKanban} activeSection={activeSection} setActiveSection={setActiveSection} />
         {activeSection === 'projects' && (
           <div className="p-6 space-y-6 animate-in slide-in-from-top-2 duration-200 bg-slate-800/20">
              {data.projects.map((proj) => (
